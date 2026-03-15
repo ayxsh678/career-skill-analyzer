@@ -45,6 +45,8 @@ function RadarChart({ skills }) {
   });
   const currentPts = pts(skills.map(s => s.current));
   const targetPts = pts(skills.map(s => s.target));
+  const toPath = (p) => p.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt[0]},${pt[1]}`).join(' ') + ' Z';
+
   return (
     <svg viewBox="0 0 300 300" style={{ width: "100%", maxWidth: 320 }}>
       {gridLevels.map(lv => {
@@ -108,7 +110,7 @@ function GlowBtn({ children, onClick, disabled, secondary }) {
     <button onClick={onClick} disabled={disabled}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
-        padding: "12px 28px", borderRadius: 8, cursor: disabled ? "not-allowed" : "pointer",
+        padding: "12px 28px", borderRadius: 8, border: "none", cursor: disabled ? "not-allowed" : "pointer",
         fontFamily: "'Space Mono', monospace", fontSize: 13, fontWeight: 700, letterSpacing: 1,
         background: disabled ? COLORS.border : secondary
           ? hover ? `${COLORS.accent2}30` : "transparent"
@@ -157,6 +159,9 @@ export default function SkillGapAnalyzer() {
   const [goals, setGoals] = useState("");
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
+  const [resumeText, setResumeText] = useState("");
+  const [resumeName, setResumeName] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
   const resultsRef = useRef(null);
 
   useEffect(() => {
@@ -164,6 +169,41 @@ export default function SkillGapAnalyzer() {
       resultsRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [step]);
+
+  async function handleResume(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setResumeLoading(true);
+    setResumeName(file.name);
+    try {
+      const text = await extractTextFromFile(file);
+      setResumeText(text);
+      if (!skills) setSkills(text.slice(0, 800));
+    } catch {
+      setError("Could not read resume. Try pasting your skills manually.");
+    }
+    setResumeLoading(false);
+  }
+
+  async function extractTextFromFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          // Basic text extraction - works for .txt files
+          resolve(text);
+        } catch { reject(); }
+      };
+      reader.onerror = reject;
+      if (file.type === "application/pdf") {
+        // For PDFs, read as text (works for text-based PDFs)
+        reader.readAsText(file);
+      } else {
+        reader.readAsText(file);
+      }
+    });
+  }
 
   async function analyze() {
     if (!role || !level || !skills) { setError("Please fill in role, level, and your current skills."); return; }
@@ -218,6 +258,8 @@ Return ONLY a JSON object with this exact structure (no markdown, no code fences
   "salaryImpact": "e.g. Closing these gaps could increase earning potential by 25-40%"
 }
 
+${resumeText ? `\nResume Content: ${resumeText.slice(0, 1500)}` : ""}
+
 Include 6-8 skills relevant to the target role. Be specific and realistic in your assessment.`;
 
     try {
@@ -225,7 +267,7 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer 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"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -323,6 +365,33 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
                   {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
+            </div>
+
+            {/* Resume Upload */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 11, fontFamily: "'Space Mono', monospace", color: COLORS.muted, marginBottom: 8, letterSpacing: 1 }}>UPLOAD RESUME (OPTIONAL)</label>
+              <label style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
+                background: COLORS.card, border: `1px dashed ${resumeName ? COLORS.accent : COLORS.border}`,
+                borderRadius: 8, cursor: "pointer", transition: "all 0.2s"
+              }}>
+                <span style={{ fontSize: 20 }}>{resumeLoading ? "⏳" : resumeName ? "✅" : "📄"}</span>
+                <div>
+                  <div style={{ fontSize: 13, color: resumeName ? COLORS.accent : COLORS.text, fontWeight: 600 }}>
+                    {resumeLoading
+                       ? "Reading resume..."
+                            : (resumeName || "Click to upload your resume")}
+                  </div>
+                  <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 2 }}>Supports .txt, .pdf (text-based)</div>
+                </div>
+                <input type="file" accept=".txt,.pdf,.doc,.docx" onChange={handleResume} style={{ display: "none" }} />
+              </label>
+              {resumeName && (
+                <button onClick={() => { setResumeText(""); setResumeName(""); setSkills(""); }}
+                  style={{ marginTop: 8, fontSize: 11, color: COLORS.danger, background: "none", border: "none", cursor: "pointer", fontFamily: "monospace" }}>
+                  ✕ Remove resume
+                </button>
+              )}
             </div>
 
             <div style={{ marginBottom: 16 }}>
