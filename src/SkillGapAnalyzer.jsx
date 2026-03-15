@@ -186,22 +186,19 @@ export default function SkillGapAnalyzer() {
   }
 
   async function extractTextFromFile(file) {
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".docx")) {
+      // Use mammoth to extract text from docx
+      const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js");
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value;
+    }
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target.result;
-          // Basic text extraction - works for .txt files
-          resolve(text);
-        } catch { reject(); }
-      };
+      reader.onload = (e) => resolve(e.target.result);
       reader.onerror = reject;
-      if (file.type === "application/pdf") {
-        // For PDFs, read as text (works for text-based PDFs)
-        reader.readAsText(file);
-      } else {
-        reader.readAsText(file);
-      }
+      reader.readAsText(file);
     });
   }
 
@@ -210,9 +207,9 @@ export default function SkillGapAnalyzer() {
     setError("");
     setStep("loading");
 
-    const prompt = `You are an expert tech career coach and skill gap analyst.
+    const prompt = `You are an expert tech career coach, ATS specialist, and skill gap analyst.
 
-Analyze the following professional profile and return a detailed skill gap analysis in valid JSON only.
+Analyze the following professional profile and return a detailed skill gap analysis WITH ATS score in valid JSON only.
 
 Profile:
 - Target Role: ${role}
@@ -255,7 +252,16 @@ Return ONLY a JSON object with this exact structure (no markdown, no code fences
     }
   ],
   "timeToReady": "e.g. 8-12 months",
-  "salaryImpact": "e.g. Closing these gaps could increase earning potential by 25-40%"
+  "salaryImpact": "e.g. Closing these gaps could increase earning potential by 25-40%",
+  "atsScore": <number 0-100>,
+  "atsLabel": "<one of: Poor | Fair | Good | Excellent>",
+  "atsFeedback": [
+    {"category": "Keywords", "score": <0-100>, "feedback": "specific feedback"},
+    {"category": "Formatting", "score": <0-100>, "feedback": "specific feedback"},
+    {"category": "Skills Match", "score": <0-100>, "feedback": "specific feedback"},
+    {"category": "Experience", "score": <0-100>, "feedback": "specific feedback"}
+  ],
+  "atsImprovements": ["improvement1", "improvement2", "improvement3"]
 }
 
 ${resumeText ? `\nResume Content: ${resumeText.slice(0, 1500)}` : ""}
@@ -267,7 +273,7 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer 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"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -378,9 +384,7 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
                 <span style={{ fontSize: 20 }}>{resumeLoading ? "⏳" : resumeName ? "✅" : "📄"}</span>
                 <div>
                   <div style={{ fontSize: 13, color: resumeName ? COLORS.accent : COLORS.text, fontWeight: 600 }}>
-                    {resumeLoading
-                       ? "Reading resume..."
-                            : (resumeName || "Click to upload your resume")}
+                    {resumeLoading ? "Reading resume..." : resumeName ? resumeName : "Click to upload your resume"}
                   </div>
                   <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 2 }}>Supports .txt, .pdf (text-based)</div>
                 </div>
@@ -457,6 +461,14 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
                     <div style={{ fontSize: 11, color: COLORS.muted, fontFamily: "'Space Mono', monospace", marginBottom: 4 }}>SALARY IMPACT</div>
                     <div style={{ fontSize: 14, color: COLORS.success, fontWeight: 600 }}>{results.salaryImpact}</div>
                   </div>
+                  {results.atsScore && (
+                    <div>
+                      <div style={{ fontSize: 11, color: COLORS.muted, fontFamily: "'Space Mono', monospace", marginBottom: 4 }}>ATS SCORE</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger }}>
+                        {results.atsScore}/100 — {results.atsLabel}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ textAlign: "center" }}>
@@ -495,6 +507,64 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
                 ))}
               </div>
             </div>
+
+            {/* ATS Score Section */}
+            {results.atsScore && (
+              <div style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: 24, marginBottom: 24 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                  <h3 style={{ margin: 0, fontSize: 12, fontFamily: "'Space Mono', monospace", color: COLORS.muted, letterSpacing: 1 }}>✦ ATS RESUME SCORE</h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{
+                      width: 64, height: 64, borderRadius: "50%",
+                      border: `3px solid ${results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger}`,
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      boxShadow: `0 0 20px ${results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger}40`,
+                      background: `${results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger}10`
+                    }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "'Syne', sans-serif", color: results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger }}>{results.atsScore}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: results.atsScore >= 70 ? COLORS.success : results.atsScore >= 40 ? COLORS.warn : COLORS.danger, fontFamily: "'Syne', sans-serif" }}>{results.atsLabel}</div>
+                      <div style={{ fontSize: 11, color: COLORS.muted, fontFamily: "monospace" }}>ATS Compatibility</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ATS Category Bars */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                  {results.atsFeedback?.map((item, i) => (
+                    <div key={i} style={{ background: COLORS.surface, borderRadius: 8, padding: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, fontFamily: "'Space Mono', monospace" }}>{item.category}</span>
+                        <span style={{ fontSize: 12, color: item.score >= 70 ? COLORS.success : item.score >= 40 ? COLORS.warn : COLORS.danger, fontFamily: "monospace" }}>{item.score}/100</span>
+                      </div>
+                      <div style={{ height: 6, background: COLORS.border, borderRadius: 3, overflow: "hidden", marginBottom: 8 }}>
+                        <div style={{
+                          height: "100%", borderRadius: 3,
+                          width: `${item.score}%`,
+                          background: item.score >= 70 ? COLORS.success : item.score >= 40 ? COLORS.warn : COLORS.danger,
+                          transition: "width 0.8s ease"
+                        }} />
+                      </div>
+                      <p style={{ fontSize: 11, color: COLORS.muted, margin: 0, lineHeight: 1.4 }}>{item.feedback}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ATS Improvements */}
+                {results.atsImprovements?.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, color: COLORS.muted, fontFamily: "'Space Mono', monospace", marginBottom: 10, letterSpacing: 1 }}>QUICK WINS TO BOOST ATS SCORE</div>
+                    {results.atsImprovements.map((tip, i) => (
+                      <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+                        <span style={{ color: COLORS.accent3, fontSize: 12, marginTop: 1 }}>→</span>
+                        <span style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.5 }}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Skill Bars + Radar */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, marginBottom: 24, alignItems: "start" }}>
