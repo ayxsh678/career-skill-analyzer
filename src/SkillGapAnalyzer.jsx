@@ -45,8 +45,6 @@ function RadarChart({ skills }) {
   });
   const currentPts = pts(skills.map(s => s.current));
   const targetPts = pts(skills.map(s => s.target));
-  const toPath = (p) => p.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt[0]},${pt[1]}`).join(' ') + ' Z';
-
   return (
     <svg viewBox="0 0 300 300" style={{ width: "100%", maxWidth: 320 }}>
       {gridLevels.map(lv => {
@@ -110,7 +108,7 @@ function GlowBtn({ children, onClick, disabled, secondary }) {
     <button onClick={onClick} disabled={disabled}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
-        padding: "12px 28px", borderRadius: 8, border: "none", cursor: disabled ? "not-allowed" : "pointer",
+        padding: "12px 28px", borderRadius: 8, cursor: disabled ? "not-allowed" : "pointer",
         fontFamily: "'Space Mono', monospace", fontSize: 13, fontWeight: 700, letterSpacing: 1,
         background: disabled ? COLORS.border : secondary
           ? hover ? `${COLORS.accent2}30` : "transparent"
@@ -227,7 +225,7 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer process.env.REACT_APP_GROQ_KEY"
+          "Authorization": "Bearer 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"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
