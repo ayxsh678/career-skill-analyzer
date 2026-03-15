@@ -1,70 +1,138 @@
-# Getting Started with Create React App
+# 🧠 AI Skill Gap Analyzer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An AI-powered career intelligence tool that analyzes your current skills and maps the exact gaps standing between you and your dream role.
 
-## Available Scripts
+![AI Skill Gap Analyzer](https://img.shields.io/badge/Powered%20by-Groq%20LLaMA%203.3-00e5ff?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react)
+![License](https://img.shields.io/badge/License-MIT-7c3aed?style=for-the-badge)
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Readiness Score** — Get a 0–100 score showing how ready you are for your target role
+- **Skill Breakdown** — Animated bars comparing your current vs target skill levels
+- **Radar Chart** — Visual overview of your entire skill profile at a glance
+- **Top Strengths & Critical Gaps** — Know exactly what to highlight and what to fix
+- **3-Phase Learning Roadmap** — Actionable steps for 0–3, 3–6, and 6–12 months
+- **Salary Impact Estimate** — Understand the financial value of closing your skill gaps
+- **12 Role Options** — Frontend, Backend, ML Engineer, DevOps, Product Manager, and more
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🚀 Live Demo
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+👉 [View Live App](https://yourusername.github.io/skill-gap-analyzer)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠 Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Technology | Purpose |
+|---|---|
+| React 18 | Frontend UI |
+| Groq API | AI inference engine |
+| LLaMA 3.3 70B | Language model for analysis |
+| CSS-in-JS | Styling |
+| GitHub Pages | Deployment |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 📦 Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Prerequisites
+- Node.js v16+
+- A free [Groq API key](https://console.groq.com)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Installation
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/skill-gap-analyzer.git
+cd skill-gap-analyzer
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Install dependencies
+npm install
 
-## Learn More
+# Start the development server
+npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Adding your API Key
 
-### Code Splitting
+Open `src/SkillGapAnalyzer.jsx` and find line 226. Replace the API key with your own Groq key:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```js
+"Authorization": "Bearer YOUR_GROQ_API_KEY_HERE"
+```
 
-### Analyzing the Bundle Size
+Get your free key at [console.groq.com](https://console.groq.com).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## 🚢 Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Deploy to GitHub Pages with one command:
 
-### Advanced Configuration
+```bash
+npm run deploy
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Make sure your `package.json` has:
 
-### Deployment
+```json
+"homepage": "https://yourusername.github.io/skill-gap-analyzer",
+"scripts": {
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build"
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 🎯 How to Use
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Select your **Target Role** (e.g. ML Engineer, Frontend Engineer)
+2. Choose your **Target Level** (Junior → Director)
+3. Describe your **Current Skills & Experience**
+4. Optionally add years of experience and career goals
+5. Click **Analyze My Skill Gaps**
+6. Get your full AI-powered career report in seconds!
+
+---
+
+## 📁 Project Structure
+
+```
+my-skill-app/
+├── public/
+│   └── index.html
+├── src/
+│   ├── App.js               # Root component
+│   ├── SkillGapAnalyzer.jsx # Main app component
+│   └── index.js             # Entry point
+├── package.json
+└── README.md
+```
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first.
+
+---
+
+## 📄 License
+
+MIT © [Ayush Verma](https://github.com/yourusername)
+
+---
+
+## 🙏 Acknowledgements
+
+- [Groq](https://groq.com) for the blazing fast free API
+- [Meta LLaMA](https://llama.meta.com) for the language model
+- Built with ❤️ using React
