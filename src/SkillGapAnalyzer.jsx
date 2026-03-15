@@ -188,11 +188,19 @@ export default function SkillGapAnalyzer() {
   async function extractTextFromFile(file) {
     const name = file.name.toLowerCase();
     if (name.endsWith(".docx")) {
-      // Use mammoth to extract text from docx
-      const mammoth = await import("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js");
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      return result.value;
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js";
+        script.onload = async () => {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await window.mammoth.extractRawText({ arrayBuffer });
+            resolve(result.value);
+          } catch(e) { reject(e); }
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
     }
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
