@@ -22,7 +22,7 @@ An AI-powered career intelligence tool that analyzes your current skills and map
 
 ## 🚀 Live Demo
 
-👉 [View Live App](https://yourusername.github.io/skill-gap-analyzer)
+👉 [View Live App](https://ayxsh678.github.io/skill-gap-analyzer)
 
 ---
 
@@ -127,7 +127,7 @@ Pull requests are welcome! For major changes, please open an issue first.
 
 ## 📄 License
 
-MIT © [Ayush Verma](https://github.com/yourusername)
+MIT © [Ayush Verma](https://github.com/ayxsh678)
 
 ---
 
