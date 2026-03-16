@@ -22,7 +22,7 @@ An AI-powered career intelligence tool that analyzes your current skills and map
 
 ## 🚀 Live Demo
 
-👉 [View Live App](https://ayxsh678.github.io/skill-gap-analyzer)
+👉 [View Live App](https://skill-gap-analyzer-delta.vercel.app)
 
 ---
 
