@@ -4,4 +4,4 @@ function App() {
   return <SkillGapAnalyzer />;
 }
 
-export default App
+export default App;
