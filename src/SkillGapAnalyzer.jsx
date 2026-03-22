@@ -162,6 +162,8 @@ export default function SkillGapAnalyzer() {
   const [resumeText, setResumeText] = useState("");
   const [resumeName, setResumeName] = useState("");
   const [resumeLoading, setResumeLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const resultsRef = useRef(null);
 
   useEffect(() => {
@@ -208,6 +210,64 @@ export default function SkillGapAnalyzer() {
       reader.onerror = reject;
       reader.readAsText(file);
     });
+  }
+
+  async function sendToMake(data) {
+    const MAKE_WEBHOOK = "YOUR_MAKE_WEBHOOK_URL";
+    if (!email || MAKE_WEBHOOK === "YOUR_MAKE_WEBHOOK_URL") return;
+    try {
+      await fetch(MAKE_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          role,
+          level,
+          readinessScore: data.readinessScore,
+          readinessLabel: data.readinessLabel,
+          atsScore: data.atsScore,
+          atsLabel: data.atsLabel,
+          summary: data.summary,
+          topStrengths: data.topStrengths,
+          criticalGaps: data.criticalGaps,
+          timeToReady: data.timeToReady,
+          salaryImpact: data.salaryImpact,
+          skills: data.skills,
+          learningPath: data.learningPath,
+          timestamp: new Date().toISOString()
+        })
+      });
+      setEmailSent(true);
+    } catch(e) { console.log("Webhook failed:", e); }
+  }
+
+  async function sendToN8n(data) {
+    try {
+      await fetch("YOUR_N8N_WEBHOOK_URL", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          role,
+          level,
+          readinessScore: data.readinessScore,
+          readinessLabel: data.readinessLabel,
+          summary: data.summary,
+          topStrengths: data.topStrengths,
+          criticalGaps: data.criticalGaps,
+          timeToReady: data.timeToReady,
+          salaryImpact: data.salaryImpact,
+          atsScore: data.atsScore || null,
+          atsLabel: data.atsLabel || null,
+          skills: data.skills,
+          learningPath: data.learningPath,
+          timestamp: new Date().toISOString()
+        })
+      });
+      setEmailSent(true);
+    } catch(e) {
+      console.log("n8n webhook failed:", e);
+    }
   }
 
   async function analyze() {
@@ -281,7 +341,7 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer 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"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
@@ -298,6 +358,8 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
       const parsed = JSON.parse(clean);
       setResults(parsed);
       setStep("results");
+      if (email) sendToN8n(parsed);
+      sendToMake(parsed);
     } catch (e) {
       setError(`Analysis failed: ${e.message || "Please try again."}`);
       setStep("form");
@@ -427,11 +489,23 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
               </div>
               <div>
                 <label style={{ display: "block", fontSize: 11, fontFamily: "'Space Mono', monospace", color: COLORS.muted, marginBottom: 8, letterSpacing: 1 }}>CAREER GOALS</label>
-                <input value={goals} onChange={e => setGoals(e.target.value)} placeholder="e.g. join MAANG, start a startup…" style={{
+                <input value={goals} onChange={e => setGoals(e.target.value)} placeholder="e.g. join FAANG, start a startup…" style={{
                   width: "100%", padding: "12px 14px", background: COLORS.card, border: `1px solid ${COLORS.border}`,
                   borderRadius: 8, color: COLORS.text, fontSize: 14, outline: "none", boxSizing: "border-box"
                 }} />
               </div>
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 11, fontFamily: "'Space Mono', monospace", color: COLORS.muted, marginBottom: 8, letterSpacing: 1 }}>EMAIL — GET REPORT IN INBOX</label>
+              <div style={{ position: "relative" }}>
+                <input value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" type="email" style={{
+                  width: "100%", padding: "12px 14px", background: COLORS.card, border: `1px solid ${email ? COLORS.accent : COLORS.border}`,
+                  borderRadius: 8, color: COLORS.text, fontSize: 14, outline: "none", boxSizing: "border-box"
+                }} />
+                {email && <span style={{ position: "absolute", right: 14, top: 13, fontSize: 16 }}>✉️</span>}
+              </div>
+              <p style={{ fontSize: 11, color: COLORS.muted, marginTop: 6, fontFamily: "monospace" }}>Optional — we'll email your full report automatically</p>
             </div>
 
             {error && <p style={{ color: COLORS.danger, fontSize: 13, marginBottom: 16, fontFamily: "monospace" }}>⚠ {error}</p>}
@@ -445,6 +519,19 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
         {/* RESULTS */}
         {step === "results" && results && (
           <div ref={resultsRef}>
+            {/* Email Sent Banner */}
+            {emailSent && (
+              <div style={{
+                background: `${COLORS.success}15`, border: `1px solid ${COLORS.success}40`,
+                borderRadius: 10, padding: "12px 20px", marginBottom: 16,
+                display: "flex", alignItems: "center", gap: 10
+              }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <span style={{ fontSize: 13, color: COLORS.success, fontFamily: "monospace" }}>
+                  Report sent to {email}! Check your inbox.
+                </span>
+              </div>
+            )}
             {/* Hero Score */}
             <div style={{
               background: COLORS.card, border: `1px solid ${COLORS.border}`,
@@ -459,6 +546,12 @@ Include 6-8 skills relevant to the target role. Be specific and realistic in you
                 <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, margin: "0 0 10px" }}>
                   Your Analysis is Ready
                 </h2>
+                {emailSent && (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `${COLORS.success}15`, border: `1px solid ${COLORS.success}40`, borderRadius: 8, padding: "6px 14px", marginBottom: 10 }}>
+                    <span style={{ fontSize: 14 }}>✅</span>
+                    <span style={{ fontSize: 12, color: COLORS.success, fontFamily: "'Space Mono', monospace" }}>Report sent to {email}</span>
+                  </div>
+                )}
                 <p style={{ color: COLORS.muted, fontSize: 14, lineHeight: 1.6, maxWidth: 500 }}>{results.summary}</p>
                 <div style={{ display: "flex", gap: 24, marginTop: 20, flexWrap: "wrap" }}>
                   <div>
