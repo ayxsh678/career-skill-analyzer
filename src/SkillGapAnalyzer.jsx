@@ -94,7 +94,7 @@ function Tag({ children, color }) {
   return <span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:`${color}20`,color,border:`1px solid ${color}40`,fontFamily:"monospace",fontWeight:600}}>{children}</span>;
 }
 
-const BACKEND = "YOUR_RENDER_URL";
+const BACKEND = "https://skill-gap-backend-s5w9.onrender.com";
 
 export default function SkillGapAnalyzer() {
   const [step, setStep] = useState("form");
